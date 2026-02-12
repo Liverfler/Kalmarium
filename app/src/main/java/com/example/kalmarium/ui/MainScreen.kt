@@ -8,6 +8,7 @@ import androidx.compose.ui.unit.dp
 import com.example.kalmarium.data.VasarEntity
 
 
+
 @Composable
 fun MainScreen(
     latestVasarList: List<VasarEntity>,

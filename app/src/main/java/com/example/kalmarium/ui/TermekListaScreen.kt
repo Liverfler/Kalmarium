@@ -11,12 +11,15 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.kalmarium.data.TermekEntity
-import com.example.kalmarium.data.EladasDao
 
 @Composable
 fun TermekListaScreen(
     termekLista: List<TermekEntity>,
-    eladasDao: EladasDao,
+    selectedTermek: TermekEntity?,
+    eladottDarab: Int,
+    osszesBevetel: Int,
+    onSelectTermek: (TermekEntity) -> Unit,
+    onClearSelectedTermek: () -> Unit,
     onBackClick: () -> Unit,
     onOpenKategoriaScreen: () -> Unit,
     onAddTermek: (String, String, Int) -> Unit,
@@ -26,7 +29,6 @@ fun TermekListaScreen(
 ) {
 
     var selectedKategoria by remember { mutableStateOf<String?>(null) }
-    var selectedTermek by remember { mutableStateOf<TermekEntity?>(null) }
     var ujAr by remember { mutableStateOf("") }
 
     // ÚJ TERMÉK
@@ -229,7 +231,7 @@ fun TermekListaScreen(
                     items(termekek) { termek ->
                         Button(
                             onClick = {
-                                selectedTermek = termek
+                                onSelectTermek(termek)
                                 ujAr = termek.ar.toString()
                             },
                             modifier = Modifier.fillMaxWidth()
@@ -246,18 +248,10 @@ fun TermekListaScreen(
             // ==============================
             selectedTermek != null -> {
 
-                val termek = selectedTermek!!
-
-                val darab by eladasDao
-                    .getOsszesEladottDarab(termek.nev)
-                    .collectAsState(initial = 0)
-
-                val bevetel by eladasDao
-                    .getOsszesBevetelTermek(termek.nev)
-                    .collectAsState(initial = 0)
+                val termek = selectedTermek
 
                 Button(
-                    onClick = { selectedTermek = null },
+                    onClick = onClearSelectedTermek,
                     modifier = Modifier.fillMaxWidth()
                 ) {
                     Text("← Vissza")
@@ -268,8 +262,8 @@ fun TermekListaScreen(
                 Text(termek.nev, style = MaterialTheme.typography.titleLarge)
                 Spacer(modifier = Modifier.height(16.dp))
 
-                Text("Eladva: $darab db")
-                Text("Összbevétel: $bevetel Ft")
+                Text("Eladva: $eladottDarab db")
+                Text("Összbevétel: $osszesBevetel Ft")
 
                 Spacer(modifier = Modifier.height(16.dp))
 
@@ -294,6 +288,7 @@ fun TermekListaScreen(
                     Text("Ár mentése")
                 }
             }
+
         }
     }
 

@@ -10,9 +10,10 @@ sealed class Screen {
 
     object UjVasar : Screen()
 
-    object TetelesEladas : Screen()
+    data class TetelesEladas(val vasar: VasarEntity) : Screen()
 
-    object EladasTorles : Screen()
+
+    data class EladasTorles(val vasar: VasarEntity) : Screen()
 
     object KategoriaSzerkeszto : Screen()
 

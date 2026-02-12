@@ -13,9 +13,14 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.lifecycleScope
 import androidx.room.Room
 import com.example.kalmarium.data.*
+import com.example.kalmarium.data.repository.EladasRepository
+import com.example.kalmarium.data.repository.TermekRepository
+import com.example.kalmarium.data.repository.VasarRepository
 import com.example.kalmarium.ui.*
 import com.example.kalmarium.ui.theme.KalmariumTheme
 import kotlinx.coroutines.launch
+
+import com.example.kalmarium.ui.navigation.Screen
 
 class MainActivity : ComponentActivity() {
 
@@ -34,40 +39,47 @@ class MainActivity : ComponentActivity() {
         val termekDao = db.termekDao()
         val eladasDao = db.eladasDao()
 
-        // ===== AUTO RESTORE =====
-        lifecycleScope.launch {
-            val vasarok = vasarDao.getAllOnce()
+        val vasarRepository = VasarRepository(
+            vasarDao,
+            termekDao,
+            eladasDao,
+            applicationContext
+        )
 
-            if (vasarok.isEmpty() &&
-                BackupManager.backupExists(applicationContext)
-            ) {
-                BackupManager.restoreBackup(applicationContext)?.let { data ->
-                    data.vasarok.orEmpty().forEach {
-                        vasarDao.insert(it.copy(id = 0))
-                    }
-                    data.termekek.orEmpty().forEach {
-                        termekDao.insert(it.copy(id = 0))
-                    }
-                    data.eladasok.orEmpty().forEach {
-                        eladasDao.insert(it.copy(id = 0))
-                    }
-                }
-            }
-        }
+        val termekRepository = TermekRepository(
+            termekDao,
+            vasarDao,
+            eladasDao,
+            applicationContext
+        )
+
+        val eladasRepository = EladasRepository(
+            eladasDao,
+            vasarDao,
+            termekDao,
+            applicationContext
+        )
+
+        val viewModel = androidx.lifecycle.ViewModelProvider(
+            this,
+            com.example.kalmarium.ui.viewmodel.MainViewModelFactory(
+                vasarRepository,
+                termekRepository,
+                eladasRepository
+            )
+        )[com.example.kalmarium.ui.viewmodel.MainViewModel::class.java]
+
+
 
         setContent {
 
-            var currentScreen by remember { mutableStateOf("main") }
-            var selectedVasar by remember { mutableStateOf<VasarEntity?>(null) }
+            var currentScreen by remember { mutableStateOf<Screen>(Screen.Main) }
             var tetelesSiker by remember { mutableStateOf(false) }
 
-            val latestVasarList by vasarDao
-                .getLatestFive()
-                .collectAsState(initial = emptyList())
+            val latestVasarList by viewModel.latestVasarList.collectAsState(initial = emptyList())
+            val termekList by viewModel.termekList.collectAsState(initial = emptyList())
 
-            val termekList by termekDao
-                .getAll()
-                .collectAsState(initial = emptyList())
+
 
             KalmariumTheme {
 
@@ -87,66 +99,80 @@ class MainActivity : ComponentActivity() {
                             .padding(horizontal = 16.dp, vertical = 40.dp)
                     ) {
 
-                        when (currentScreen) {
+                        when (val screen = currentScreen) {
 
                             // ===== FŐMENÜ =====
-                            "main" -> MainScreen(
+                            Screen.Main -> MainScreen(
                                 latestVasarList = latestVasarList,
-                                onTermekekClick = { currentScreen = "termekek" },
-                                onUjVasarClick = { currentScreen = "ujvasar" },
+                                onTermekekClick = { currentScreen = Screen.Termekek },
+                                onUjVasarClick = { currentScreen = Screen.UjVasar },
                                 onVasarClick = { vasar ->
-                                    selectedVasar = vasar
-                                    currentScreen = "vasarreszletek"
+                                    currentScreen = Screen.VasarReszletek(vasar)
                                 }
                             )
 
                             // ===== TERMÉKEK =====
-                            "termekek" -> TermekListaScreen(
-                                termekLista = termekList,
-                                eladasDao = eladasDao,
-                                onBackClick = { currentScreen = "main" },
-                                onOpenKategoriaScreen = {
-                                    currentScreen = "kategoriaSzerkeszto"
-                                },
-                                onAddTermek = { nev, kategoria, ar ->
-                                    lifecycleScope.launch {
-                                        termekDao.insert(
+                            Screen.Termekek -> {
+
+                                val selectedTermek by viewModel.selectedTermek.collectAsState()
+                                val eladottDarab by viewModel.eladottDarab.collectAsState()
+                                val osszesBevetel by viewModel.osszesBevetel.collectAsState()
+
+                                TermekListaScreen(
+                                    termekLista = termekList,
+                                    selectedTermek = selectedTermek,
+                                    eladottDarab = eladottDarab,
+                                    osszesBevetel = osszesBevetel,
+
+                                    onSelectTermek = { termek ->
+                                        viewModel.selectTermek(termek)
+                                    },
+
+                                    onClearSelectedTermek = {
+                                        viewModel.clearSelectedTermek()
+                                    },
+
+                                    onBackClick = { currentScreen = Screen.Main },
+
+                                    onOpenKategoriaScreen = {
+                                        currentScreen = Screen.KategoriaSzerkeszto
+                                    },
+
+                                    onAddTermek = { nev, kategoria, ar ->
+                                        viewModel.insertTermek(
                                             TermekEntity(
                                                 nev = nev,
                                                 kategoria = kategoria,
                                                 ar = ar
                                             )
                                         )
-                                        saveBackup(vasarDao, termekDao, eladasDao)
+                                    },
+
+                                    onUpdateAr = { id, ujAr ->
+                                        viewModel.updateAr(id, ujAr)
+                                    },
+
+                                    onRenameKategoria = { regiNev, ujNev ->
+                                        viewModel.renameKategoria(regiNev, ujNev)
+                                    },
+
+                                    onDeleteKategoria = { kategoria ->
+                                        viewModel.deleteKategoria(kategoria)
                                     }
-                                },
-                                onUpdateAr = { id, ujAr ->
-                                    lifecycleScope.launch {
-                                        termekDao.updateAr(id, ujAr)
-                                    }
-                                },
-                                onRenameKategoria = { regiNev, ujNev ->
-                                    lifecycleScope.launch {
-                                        termekDao.renameKategoria(regiNev, ujNev)
-                                        saveBackup(vasarDao, termekDao, eladasDao)
-                                    }
-                                },
-                                onDeleteKategoria = { kategoria ->
-                                    lifecycleScope.launch {
-                                        termekDao.deleteByKategoria(kategoria)
-                                        saveBackup(vasarDao, termekDao, eladasDao)
-                                    }
-                                }
-                            )
+                                )
+                            }
+
 
                             // ===== VÁSÁR RÉSZLETEK =====
-                            "vasarreszletek" -> selectedVasar?.let { vasar ->
+                            is Screen.VasarReszletek -> {
 
-                                val bevetel by eladasDao
+                                val vasar = screen.vasar
+
+                                val bevetel by viewModel
                                     .getBevetelForVasar(vasar.nev)
                                     .collectAsState(initial = 0)
 
-                                val eladasLista by eladasDao
+                                val eladasLista by viewModel
                                     .getEladasokVasarhoz(vasar.nev)
                                     .collectAsState(initial = emptyList())
 
@@ -159,38 +185,31 @@ class MainActivity : ComponentActivity() {
                                     termekLista = termekList,
                                     eladasLista = eladasLista,
 
-                                    onBackClick = { currentScreen = "main" },
+                                    onBackClick = { currentScreen = Screen.Main },
 
                                     onTetelesEladasClick = {
-                                        currentScreen = "teteleseladas"
+                                        currentScreen = Screen.TetelesEladas(vasar)
                                     },
 
                                     onEladasRogzit = { termek ->
-                                        lifecycleScope.launch {
-                                            eladasDao.insert(
-                                                EladasEntity(
-                                                    vasarNev = vasar.nev,
-                                                    termekNev = termek.nev,
-                                                    kategoria = termek.kategoria,
-                                                    mennyiseg = 1,
-                                                    timestamp = System.currentTimeMillis()
-                                                )
+                                        viewModel.insertEladas(
+                                            EladasEntity(
+                                                vasarNev = vasar.nev,
+                                                termekNev = termek.nev,
+                                                kategoria = termek.kategoria,
+                                                mennyiseg = 1,
+                                                timestamp = System.currentTimeMillis()
                                             )
-                                            saveBackup(vasarDao, termekDao, eladasDao)
-                                        }
+                                        )
                                     },
 
                                     onDeleteEladasScreenClick = {
-                                        currentScreen = "eladastorles"
+                                        currentScreen = Screen.EladasTorles(vasar)
                                     },
 
                                     onDeleteVasarClick = {
-                                        lifecycleScope.launch {
-
-                                            vasarDao.delete(vasar)
-                                            saveBackup(vasarDao, termekDao, eladasDao)
-                                        }
-                                        currentScreen = "main"
+                                        viewModel.deleteVasar(vasar)
+                                        currentScreen = Screen.Main
                                     },
 
                                     showTetelesSiker = tetelesSiker,
@@ -200,39 +219,45 @@ class MainActivity : ComponentActivity() {
                                 )
                             }
 
+
                             // ===== TÉTELES ELADÁS =====
-                            "teteleseladas" -> selectedVasar?.let { vasar ->
+                            is Screen.TetelesEladas -> {
+
+
+                                val vasar = screen.vasar
+
 
                                 TetelesEladasScreen(
                                     termekLista = termekList,
                                     onBackClick = {
-                                        currentScreen = "vasarreszletek"
+                                        currentScreen = Screen.VasarReszletek(vasar)
                                     },
                                     onEladasVeglegesites = { kosar ->
-                                        lifecycleScope.launch {
-                                            kosar.forEach { termek ->
-                                                eladasDao.insert(
-                                                    EladasEntity(
-                                                        vasarNev = vasar.nev,
-                                                        termekNev = termek.nev,
-                                                        kategoria = termek.kategoria,
-                                                        mennyiseg = 1,
-                                                        timestamp = System.currentTimeMillis()
-                                                    )
+                                        kosar.forEach { termek ->
+                                            viewModel.insertEladas(
+                                                EladasEntity(
+                                                    vasarNev = vasar.nev,
+                                                    termekNev = termek.nev,
+                                                    kategoria = termek.kategoria,
+                                                    mennyiseg = 1,
+                                                    timestamp = System.currentTimeMillis()
                                                 )
-                                            }
-                                            saveBackup(vasarDao, termekDao, eladasDao)
+                                            )
                                         }
+
                                         tetelesSiker = true
-                                        currentScreen = "vasarreszletek"
+                                        currentScreen = Screen.VasarReszletek(vasar)
                                     }
+
                                 )
                             }
 
                             // ===== ELADÁS TÖRLÉS =====
-                            "eladastorles" -> selectedVasar?.let { vasar ->
+                            is Screen.EladasTorles -> {
 
-                                val eladasLista by eladasDao
+                                val vasar = screen.vasar
+
+                                val eladasLista by viewModel
                                     .getEladasokVasarhoz(vasar.nev)
                                     .collectAsState(initial = emptyList())
 
@@ -240,77 +265,47 @@ class MainActivity : ComponentActivity() {
                                     vasarNev = vasar.nev,
                                     eladasLista = eladasLista,
                                     onBackClick = {
-                                        currentScreen = "vasarreszletek"
+                                        currentScreen = Screen.VasarReszletek(vasar)
                                     },
                                     onDeleteEladas = { eladas ->
-                                        lifecycleScope.launch {
-                                            eladasDao.delete(eladas)
-                                            saveBackup(vasarDao, termekDao, eladasDao)
-                                        }
+                                        viewModel.deleteEladas(eladas)
                                     },
                                     onDeleteAll = {
-                                        lifecycleScope.launch {
-                                            eladasDao.deleteAllForVasar(vasar.nev)
-                                            saveBackup(vasarDao, termekDao, eladasDao)
-                                        }
+                                        viewModel.deleteAllForVasar(vasar.nev)
                                     }
+
+
                                 )
                             }
 
-
-                            "kategoriaSzerkeszto" -> KategoriaSzerkesztoScreen(
+                            Screen.KategoriaSzerkeszto -> KategoriaSzerkesztoScreen(
                                 kategoriak = termekList.map { it.kategoria }.distinct(),
-                                onBackClick = { currentScreen = "termekek" },
+                                onBackClick = { currentScreen = Screen.Termekek },
                                 onRenameKategoria = { regiNev, ujNev ->
-                                    lifecycleScope.launch {
-                                        termekDao.renameKategoria(regiNev, ujNev)
-                                        saveBackup(vasarDao, termekDao, eladasDao)
-                                    }
+                                    viewModel.renameKategoria(regiNev, ujNev)
                                 },
                                 onDeleteKategoria = { kategoria ->
-                                    lifecycleScope.launch {
-                                        termekDao.deleteByKategoria(kategoria)
-                                        saveBackup(vasarDao, termekDao, eladasDao)
-                                    }
+                                    viewModel.deleteKategoria(kategoria)
                                 }
                             )
 
 
-
-
-
-                            // ===== ÚJ VÁSÁR =====
-                            "ujvasar" -> NewVasarScreen(
-                                onBackClick = { currentScreen = "main" },
+                            Screen.UjVasar -> NewVasarScreen(
+                                onBackClick = { currentScreen = Screen.Main },
                                 onSave = { ujVasar ->
-                                    lifecycleScope.launch {
-                                        vasarDao.insert(ujVasar)
-                                        saveBackup(vasarDao, termekDao, eladasDao)
-                                    }
-                                    currentScreen = "main"
+                                    viewModel.insertVasar(ujVasar)
+                                    currentScreen = Screen.Main
                                 }
+
                             )
+
                         }
                     }
                 }
             }
         }
-    }
 
-    private suspend fun saveBackup(
-        vasarDao: VasarDao,
-        termekDao: TermekDao,
-        eladasDao: EladasDao
-    ) {
-        val vasarok = vasarDao.getAllOnce()
-        val termekek = termekDao.getAllOnce()
-        val eladasok = eladasDao.getAllOnce()
-
-        BackupManager.saveBackup(
-            applicationContext,
-            vasarok,
-            termekek,
-            eladasok
-        )
     }
 }
+
+

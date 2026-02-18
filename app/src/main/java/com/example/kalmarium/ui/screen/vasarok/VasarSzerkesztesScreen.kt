@@ -9,11 +9,9 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.kalmarium.data.VasarEntity
 import com.example.kalmarium.ui.dialog.VasarEditDialog
 import com.example.kalmarium.ui.theme.AppButton
-import com.example.kalmarium.ui.theme.blackGlow
 import com.example.kalmarium.ui.theme.solidGlow
 import com.example.kalmarium.ui.viewmodel.VasarSzerkesztesViewModel.HonapOsszesites
 

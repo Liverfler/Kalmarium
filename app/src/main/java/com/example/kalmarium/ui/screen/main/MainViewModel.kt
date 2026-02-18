@@ -11,7 +11,7 @@ import kotlinx.coroutines.launch
 
 class MainViewModel(
     private val vasarRepository: VasarRepository,
-    private val eladasRepository: EladasRepository,
+    eladasRepository: EladasRepository,
     private val userSettingsRepository: UserSettingsRepository
 ) : ViewModel() {
 
@@ -72,12 +72,6 @@ class MainViewModel(
     }
 
 
-    fun createNewVasar(vasar: VasarEntity) {
-        viewModelScope.launch {
-            val newId = vasarRepository.insertVasar(vasar)
-            userSettingsRepository.saveActiveVasarId(newId.toInt())
-        }
-    }
 
     fun updateVasar(vasar: VasarEntity) {
         viewModelScope.launch {

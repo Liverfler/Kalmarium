@@ -19,9 +19,9 @@ data class StatisztikaUiState(
 )
 
 class StatisztikaViewModel(
-    private val vasarRepository: VasarRepository,
-    private val eladasRepository: EladasRepository,
-    private val userSettingsRepository: UserSettingsRepository
+    vasarRepository: VasarRepository,
+    eladasRepository: EladasRepository,
+    userSettingsRepository: UserSettingsRepository
 ) : ViewModel() {
 
     private val _fromDate = MutableStateFlow<Long?>(null)

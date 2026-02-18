@@ -12,7 +12,6 @@ import com.example.kalmarium.data.repository.RepositoryProvider
 import com.example.kalmarium.ui.navigation.AppNavigation
 import androidx.navigation.compose.rememberNavController
 import androidx.compose.foundation.Image
-import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource

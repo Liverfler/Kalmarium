@@ -1,7 +1,5 @@
 package com.example.kalmarium.ui.theme
 
-import androidx.compose.ui.graphics.Color
-
 enum class AppThemeType(
     val primaryColor: Int,
     val displayName: String
@@ -38,13 +36,8 @@ enum class AppThemeType(
      */
     companion object {
         fun fromColor(color: Int?): AppThemeType {
-            return values().firstOrNull { it.primaryColor == color } ?: BLUE
+            return AppThemeType.entries.firstOrNull { it.primaryColor == color } ?: BLUE
         }
     }
 
-    /**
-     * Compose kompatibilis Color típus
-     */
-    val composeColor: Color
-        get() = Color(primaryColor)
 }

@@ -36,21 +36,12 @@ class VasarRepository(
         return vasarDao.getAll()
     }
 
-    fun getLatestFive(): Flow<List<VasarEntity>> {
-        return vasarDao.getLatestFive()
-    }
-
     suspend fun getAllOnce(): List<VasarEntity> {
         return vasarDao.getAllOnce()
     }
 
-    fun getVasarByNev(nev: String): Flow<VasarEntity?> {
-        return vasarDao.getVasarByNev(nev)
-    }
 
-
-
-        // =============================
+    // =============================
         // Archiválás (Befejezés) frissítése
         // =============================
         suspend fun archiveVasar(vasarId: Int) {

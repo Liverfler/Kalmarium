@@ -14,7 +14,7 @@ import java.time.LocalDate
 import java.time.format.DateTimeFormatter
 import java.time.format.DateTimeParseException
 
-@RequiresApi(Build.VERSION_CODES.O)
+
 @Composable
 fun NewVasarScreen(
     onBackClick: () -> Unit,
@@ -119,7 +119,7 @@ fun NewVasarScreen(
 
                     onSave(ujVasar)
 
-                } catch (e: DateTimeParseException) {
+                } catch (_: DateTimeParseException) {
                     datumHiba = true
                 }
             },

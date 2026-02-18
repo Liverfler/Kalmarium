@@ -7,13 +7,11 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import com.example.kalmarium.ui.navigation.Screen
 import com.example.kalmarium.ui.theme.blackGlow
 
 @Composable
 fun MenuDialog(
     onDismiss: () -> Unit,
-    onNavigate: (Screen) -> Unit,
     onMainClick: () -> Unit,
     onUjVasarClick: () -> Unit,
     onVasarSzerkesztesClick: () -> Unit,

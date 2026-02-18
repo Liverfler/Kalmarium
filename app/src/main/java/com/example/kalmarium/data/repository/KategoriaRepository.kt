@@ -13,9 +13,6 @@ class KategoriaRepository(
         return kategoriaDao.getAll()
     }
 
-    fun getWithTermekek(): Flow<List<KategoriaWithTermekek>> {
-        return kategoriaDao.getWithTermekek()
-    }
 
     suspend fun insert(kategoria: KategoriaEntity) {
         kategoriaDao.insert(kategoria)
@@ -29,13 +26,5 @@ class KategoriaRepository(
         kategoriaDao.update(kategoria)
     }
 
-    // ✅ EZ HIÁNYZOTT NÁLAD
-    suspend fun updateKategoriaOrder(kategoriak: List<KategoriaEntity>) {
 
-        kategoriak.forEachIndexed { index, kategoria ->
-            kategoriaDao.update(
-                kategoria.copy(sorrend = index)
-            )
-        }
-    }
 }

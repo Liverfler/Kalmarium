@@ -40,20 +40,6 @@ class EladasRepository(
         return eladasDao.getEladasokVasarhoz(vasarId)
     }
 
-    fun getBevetelForVasar(vasarId: Int): Flow<Int> {
-        return eladasDao.getBevetelForVasar(vasarId)
-    }
-
-    fun getOsszesEladottDarab(termekNev: String): Flow<Int> {
-        return eladasDao.getOsszesEladottDarab(termekNev)
-    }
-
-    fun getOsszesBevetelTermek(termekNev: String): Flow<Int> {
-        return eladasDao.getOsszesBevetelTermek(termekNev)
-    }
-
-
-
 
     suspend fun getAllOnce(): List<EladasEntity> {
         return eladasDao.getAllOnce()

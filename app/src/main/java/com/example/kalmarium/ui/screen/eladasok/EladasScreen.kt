@@ -1,8 +1,5 @@
 package com.example.kalmarium.ui.screen.eladasok
 
-import android.R
-import androidx.compose.foundation.background
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
@@ -15,8 +12,6 @@ import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
-import androidx.compose.ui.text.font.Font
-import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.lifecycle.viewmodel.compose.viewModel
@@ -28,13 +23,10 @@ import com.example.kalmarium.data.repository.TermekRepository
 import com.example.kalmarium.data.repository.VasarRepository
 import com.example.kalmarium.ui.dialog.KategoriaEditDialog
 import com.example.kalmarium.ui.dialog.TermekEditDialog
-import kotlinx.coroutines.launch
-import com.example.kalmarium.ui.dialog.ConfirmDeleteDialog
 import com.example.kalmarium.ui.dialog.KategoriaNewDialog
 import com.example.kalmarium.ui.dialog.TermekNewDialog
 import com.example.kalmarium.ui.theme.AppButton
 import com.example.kalmarium.ui.theme.blackGlow
-import com.example.kalmarium.ui.theme.solidGlow
 
 
 @Composable
@@ -62,7 +54,6 @@ fun EladasScreen(
     val kategoriaLista by viewModel.kategoriaLista.collectAsState()
 
     val snackbarHostState = remember { SnackbarHostState() }
-    val scope = rememberCoroutineScope()
 
     var selectedKategoria by remember { mutableStateOf<Int?>(null) }
 
@@ -206,7 +197,6 @@ fun EladasScreen(
 
                         }
 
-                        Divider()
                     }
                 }
             }
@@ -323,7 +313,6 @@ fun EladasScreen(
                             }
                         }
 
-                        Divider()
                     }
                 }
 
@@ -391,10 +380,9 @@ fun EladasScreen(
 
     if (showNewKategoriaDialog) {
         KategoriaNewDialog(
-            onDismiss = { showNewKategoriaDialog = false },
+            onDismiss = { },
             onSave = {
                 viewModel.insertKategoria(it)
-                showNewKategoriaDialog = false
             }
         )
     }
@@ -407,10 +395,9 @@ fun EladasScreen(
             TermekNewDialog(
                 kategoriaId = it.id,
                 kategoriaNev = it.nev,
-                onDismiss = { showNewTermekDialog = false },
+                onDismiss = { },
                 onSave = {
                     viewModel.insertTermek(it)
-                    showNewTermekDialog = false
                 }
             )
         }

@@ -15,11 +15,9 @@ import androidx.compose.ui.Alignment
 
 @Composable
 fun EladasTorlesScreen(
-    vasarId: Int,
     eladasLista: List<EladasEntity>,
     onBackClick: () -> Unit,
     onDeleteEladas: (EladasEntity) -> Unit,
-    onDeleteAll: () -> Unit
 ) {
 
     val dateFormat = remember {

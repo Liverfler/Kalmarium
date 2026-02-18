@@ -78,7 +78,7 @@ fun SettingsScreen(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            AppThemeType.values().forEach { theme ->
+            AppThemeType.entries.forEach { theme ->
 
                 ThemeOptionItem(
                     theme = theme,
@@ -137,7 +137,7 @@ private fun ThemeOptionItem(
                     .size(24.dp)
                     .clip(CircleShape)
                     .background(
-                        color = androidx.compose.ui.graphics.Color(theme.primaryColor)
+                        color = Color(theme.primaryColor)
                     )
             )
 

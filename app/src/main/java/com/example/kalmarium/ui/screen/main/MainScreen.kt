@@ -124,6 +124,7 @@ fun MainScreen(
 
             Spacer(modifier = Modifier.height(24.dp))
 
+            Divider()
 
             Spacer(modifier = Modifier.height(16.dp))
 

@@ -35,24 +35,6 @@ class TermekRepository(
     suspend fun getAllOnce() = termekDao.getAllOnce()
 
     // =========================
-    // UPDATE
-    // =========================
-    suspend fun updateAr(id: Int, ujAr: Int) {
-        termekDao.updateAr(id, ujAr)
-        saveBackup()
-    }
-
-    suspend fun renameKategoria(regi: String, uj: String) {
-        termekDao.renameKategoria(regi, uj)
-        saveBackup()
-    }
-
-    suspend fun deleteByKategoria(kategoria: String) {
-        termekDao.deleteByKategoria(kategoria)
-        saveBackup()
-    }
-
-    // =========================
     // KATEGÓRIA SORREND
     // =========================
     suspend fun updateKategoriakOrder(kategoriak: List<KategoriaEntity>) {

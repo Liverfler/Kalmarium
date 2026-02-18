@@ -1,7 +1,6 @@
 package com.example.kalmarium.ui.navigation
 
 import VasarSzerkesztesViewModelFactory
-import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
@@ -21,7 +20,6 @@ import com.example.kalmarium.ui.screen.eladasok.*
 import com.example.kalmarium.ui.screen.main.*
 import com.example.kalmarium.ui.screen.settings.SettingsScreen
 import com.example.kalmarium.ui.screen.settings.SettingsViewModel
-import com.example.kalmarium.ui.screen.settings.SettingsViewModelFactory
 import com.example.kalmarium.ui.screen.statisztika.StatisztikaScreen
 import com.example.kalmarium.ui.screen.statisztika.StatisztikaViewModel
 import com.example.kalmarium.ui.screen.statisztika.StatisztikaViewModelFactory
@@ -303,31 +301,7 @@ fun AppNavigation(
                 )
             }
 
-            composable("pdf") {
 
-                val vasar = mainUiState.activeVasar
-
-                if (vasar != null) {
-
-                    val vm: PdfExportViewModel = viewModel(
-                        factory = PdfExportViewModelFactory(
-                            eladasRepository
-                        )
-
-                    )
-
-                    PdfExportScreen(
-                        vasar = vasar,
-                        eladasLista = mainUiState.eladasokAktiv,
-                        bevetel = mainUiState.bevetel,
-                        koltseg = vasar.koltseg,
-                        viewModel = vm,
-                        onBackClick = {
-                            navController.popBackStack()
-                        }
-                    )
-                }
-            }
 
             composable("settings") {
 
@@ -395,7 +369,6 @@ fun AppNavigation(
                 val eladasLista by vm.eladasLista.collectAsState()
 
                 EladasTorlesScreen(
-                    vasarId = vasarId,
                     eladasLista = eladasLista,
 
                     onBackClick = {
@@ -406,11 +379,7 @@ fun AppNavigation(
                         vm.deleteEladas(eladas)
                     },
 
-                    onDeleteAll = {
-                        // deleteAllForVasar nincs az EladasViewModel-ben
-                        // de egyszerűen hozzáadható:
-                        vm.deleteAllForVasar()
-                    }
+
                 )
             }
 
@@ -428,8 +397,6 @@ fun AppNavigation(
         if (showMenuDialog) {
             MenuDialog(
                 onDismiss = { showMenuDialog = false },
-
-                onNavigate = {}, // nem használjuk, de megadjuk
 
                 onMainClick = {
                     navController.navigate("main") {
@@ -479,7 +446,7 @@ fun AppNavigation(
                     navController.navigate("settings")
                 },
 
-                        onTermekekClick = {
+                onTermekekClick = {
                     showMenuDialog = false
                     navController.navigate("termekek")
                 },

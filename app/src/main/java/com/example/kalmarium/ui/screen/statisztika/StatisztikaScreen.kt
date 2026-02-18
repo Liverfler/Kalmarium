@@ -407,7 +407,6 @@ fun StatisztikaScreen(
                                 )
                             }
 
-                            Divider()
                         }
                     }
 

@@ -1,63 +1,69 @@
 package com.example.kalmarium.data.repository
 
-import android.content.Context
-import com.example.kalmarium.data.*
-import com.example.kalmarium.data.BackupManager
+import com.example.kalmarium.data.VasarDao
+import com.example.kalmarium.data.VasarEntity
+import kotlinx.coroutines.flow.Flow
 
 class VasarRepository(
-    private val vasarDao: VasarDao,
-    private val termekDao: TermekDao,
-    private val eladasDao: EladasDao,
-    private val context: Context
+    private val vasarDao: VasarDao
 ) {
 
-    suspend fun insertVasar(vasar: VasarEntity) {
-        vasarDao.insert(vasar)
-        saveBackup()
+    // =============================
+    // INSERT
+    // =============================
+    suspend fun insertVasar(vasar: VasarEntity): Long {
+        return vasarDao.insert(vasar)
     }
 
+    // =============================
+    // DELETE
+    // =============================
     suspend fun deleteVasar(vasar: VasarEntity) {
         vasarDao.delete(vasar)
-        saveBackup()
     }
 
-    fun getLatestFive() = vasarDao.getLatestFive()
+    // =============================
+    // UPDATE
+    // =============================
+    suspend fun updateVasar(vasar: VasarEntity) {
+        vasarDao.update(vasar)
+    }
 
-    suspend fun autoRestoreIfNeeded() {
+    // =============================
+    // GET
+    // =============================
+    fun getAll(): Flow<List<VasarEntity>> {
+        return vasarDao.getAll()
+    }
 
-        val vasarok = vasarDao.getAllOnce()
+    fun getLatestFive(): Flow<List<VasarEntity>> {
+        return vasarDao.getLatestFive()
+    }
 
-        if (vasarok.isEmpty() &&
-            BackupManager.backupExists(context)
-        ) {
-            BackupManager.restoreBackup(context)?.let { data ->
+    suspend fun getAllOnce(): List<VasarEntity> {
+        return vasarDao.getAllOnce()
+    }
 
-                data.vasarok.orEmpty().forEach {
-                    vasarDao.insert(it.copy(id = 0))
-                }
+    fun getVasarByNev(nev: String): Flow<VasarEntity?> {
+        return vasarDao.getVasarByNev(nev)
+    }
 
-                data.termekek.orEmpty().forEach {
-                    termekDao.insert(it.copy(id = 0))
-                }
 
-                data.eladasok.orEmpty().forEach {
-                    eladasDao.insert(it.copy(id = 0))
-                }
-            }
+
+        // =============================
+        // Archiválás (Befejezés) frissítése
+        // =============================
+        suspend fun archiveVasar(vasarId: Int) {
+            vasarDao.updateVasarStatus(vasarId, true)
         }
+
+        // =============================
+        // Vásár állapotának visszaállítása
+        // =============================
+        suspend fun unarchiveVasar(vasarId: Int) {
+            vasarDao.updateVasarStatus(vasarId, false)
+
+
     }
 
-
-    private suspend fun saveBackup() {
-        val vasarok = vasarDao.getAllOnce()
-        val termekek = termekDao.getAllOnce()
-        val eladasok = eladasDao.getAllOnce()
-
-        BackupManager.saveBackup(
-            context,
-            vasarok,
-            termekek,
-            eladasok
-        )
-    }
 }

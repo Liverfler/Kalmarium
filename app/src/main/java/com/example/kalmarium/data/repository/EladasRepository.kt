@@ -1,54 +1,61 @@
 package com.example.kalmarium.data.repository
 
-import android.content.Context
-import com.example.kalmarium.data.*
-import com.example.kalmarium.data.BackupManager
+import com.example.kalmarium.data.EladasDao
+import com.example.kalmarium.data.EladasEntity
+import kotlinx.coroutines.flow.Flow
 
 class EladasRepository(
-    private val eladasDao: EladasDao,
-    private val vasarDao: VasarDao,
-    private val termekDao: TermekDao,
-    private val context: Context
+    private val eladasDao: EladasDao
 ) {
+
+    // =========================
+    // INSERT
+    // =========================
 
     suspend fun insert(eladas: EladasEntity) {
         eladasDao.insert(eladas)
-        saveBackup()
     }
 
-    fun getOsszesEladottDarab(termekNev: String) =
-        eladasDao.getOsszesEladottDarab(termekNev)
-
-    fun getOsszesBevetelTermek(termekNev: String) =
-        eladasDao.getOsszesBevetelTermek(termekNev)
-
+    // =========================
+    // DELETE
+    // =========================
 
     suspend fun delete(eladas: EladasEntity) {
         eladasDao.delete(eladas)
-        saveBackup()
     }
 
-    suspend fun deleteAllForVasar(vasarNev: String) {
-        eladasDao.deleteAllForVasar(vasarNev)
-        saveBackup()
+    suspend fun deleteAllForVasar(vasarId: Int) {
+        eladasDao.deleteAllForVasar(vasarId)
     }
 
-    fun getEladasokVasarhoz(vasarNev: String) =
-        eladasDao.getEladasokVasarhoz(vasarNev)
+    // =========================
+    // GET
+    // =========================
 
-    fun getBevetelForVasar(vasarNev: String) =
-        eladasDao.getBevetelForVasar(vasarNev)
+    fun getAll(): Flow<List<EladasEntity>> {
+        return eladasDao.getAll()
+    }
 
-    private suspend fun saveBackup() {
-        val vasarok = vasarDao.getAllOnce()
-        val termekek = termekDao.getAllOnce()
-        val eladasok = eladasDao.getAllOnce()
+    fun getEladasokVasarhoz(vasarId: Int): Flow<List<EladasEntity>> {
+        return eladasDao.getEladasokVasarhoz(vasarId)
+    }
 
-        BackupManager.saveBackup(
-            context,
-            vasarok,
-            termekek,
-            eladasok
-        )
+    fun getBevetelForVasar(vasarId: Int): Flow<Int> {
+        return eladasDao.getBevetelForVasar(vasarId)
+    }
+
+    fun getOsszesEladottDarab(termekNev: String): Flow<Int> {
+        return eladasDao.getOsszesEladottDarab(termekNev)
+    }
+
+    fun getOsszesBevetelTermek(termekNev: String): Flow<Int> {
+        return eladasDao.getOsszesBevetelTermek(termekNev)
+    }
+
+
+
+
+    suspend fun getAllOnce(): List<EladasEntity> {
+        return eladasDao.getAllOnce()
     }
 }

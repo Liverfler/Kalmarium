@@ -18,4 +18,12 @@ sealed class Screen {
     object KategoriaSzerkeszto : Screen()
 
     data class VasarReszletek(val vasar: VasarEntity) : Screen()
+
+    object CsoportosTermek : Screen()
+
+    object VasarSzerkesztes : Screen()
+
+    data class PdfExport(val vasar: VasarEntity) : Screen()
+
+
 }

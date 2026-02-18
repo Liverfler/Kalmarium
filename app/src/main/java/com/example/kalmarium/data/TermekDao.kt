@@ -9,11 +9,20 @@ interface TermekDao {
     @Insert
     suspend fun insert(termek: TermekEntity)
 
-    @Query("SELECT * FROM termek ORDER BY nev ASC")
-    fun getAll(): Flow<List<TermekEntity>>
+    @Update
+    suspend fun update(termek: TermekEntity)
 
     @Delete
     suspend fun delete(termek: TermekEntity)
+
+    @Query("SELECT * FROM termek ORDER BY sorrend ASC")
+    fun getAll(): Flow<List<TermekEntity>>
+
+    @Query("SELECT * FROM termek ORDER BY sorrend ASC")
+    suspend fun getAllOnce(): List<TermekEntity>
+
+    @Query("SELECT * FROM termek WHERE kategoriaId = :kategoriaId ORDER BY sorrend ASC")
+    suspend fun getByKategoriaIdOnce(kategoriaId: Int): List<TermekEntity>
 
     @Query("UPDATE termek SET ar = :ujAr WHERE id = :termekId")
     suspend fun updateAr(termekId: Int, ujAr: Int)
@@ -23,10 +32,4 @@ interface TermekDao {
 
     @Query("DELETE FROM termek WHERE kategoria = :kategoriaNev")
     suspend fun deleteByKategoria(kategoriaNev: String)
-
-    @Query("SELECT * FROM termek")
-    suspend fun getAllOnce(): List<TermekEntity>
-
-
-
 }

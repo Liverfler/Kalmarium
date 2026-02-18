@@ -7,19 +7,36 @@ class TermekRepository(
     private val termekDao: TermekDao,
     private val vasarDao: VasarDao,
     private val eladasDao: EladasDao,
+    private val kategoriaDao: KategoriaDao,
     private val context: Context
 ) {
 
-    // ===== INSERT =====
+    // =========================
+    // INSERT
+    // =========================
     suspend fun insert(termek: TermekEntity) {
         termekDao.insert(termek)
         saveBackup()
     }
 
-    // ===== GET ALL =====
+    // =========================
+    // DELETE
+    // =========================
+    suspend fun delete(termek: TermekEntity) {
+        termekDao.delete(termek)
+        saveBackup()
+    }
+
+    // =========================
+    // GET
+    // =========================
     fun getAll() = termekDao.getAll()
 
-    // ===== UPDATE =====
+    suspend fun getAllOnce() = termekDao.getAllOnce()
+
+    // =========================
+    // UPDATE
+    // =========================
     suspend fun updateAr(id: Int, ujAr: Int) {
         termekDao.updateAr(id, ujAr)
         saveBackup()
@@ -35,7 +52,37 @@ class TermekRepository(
         saveBackup()
     }
 
-    // ===== BACKUP =====
+    // =========================
+    // KATEGÓRIA SORREND
+    // =========================
+    suspend fun updateKategoriakOrder(kategoriak: List<KategoriaEntity>) {
+
+        kategoriak.forEachIndexed { index, kategoria ->
+            kategoriaDao.update(
+                kategoria.copy(sorrend = index)
+            )
+        }
+
+        saveBackup()
+    }
+
+    // =========================
+    // TERMÉK SORREND
+    // =========================
+    suspend fun updateTermekOrder(termekek: List<TermekEntity>) {
+
+        termekek.forEachIndexed { index, termek ->
+            termekDao.update(
+                termek.copy(sorrend = index)
+            )
+        }
+
+        saveBackup()
+    }
+
+    // =========================
+    // BACKUP
+    // =========================
     private suspend fun saveBackup() {
         val vasarok = vasarDao.getAllOnce()
         val termekek = termekDao.getAllOnce()
@@ -48,4 +95,13 @@ class TermekRepository(
             eladasok
         )
     }
+
+    // =========================
+    // UPDATE TELJES TERMÉK
+    // =========================
+    suspend fun update(termek: TermekEntity) {
+        termekDao.update(termek)
+        saveBackup()
+    }
+
 }

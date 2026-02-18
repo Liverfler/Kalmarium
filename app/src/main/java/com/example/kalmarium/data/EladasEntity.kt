@@ -5,11 +5,17 @@ import androidx.room.PrimaryKey
 
 @Entity(tableName = "eladas")
 data class EladasEntity(
+
     @PrimaryKey(autoGenerate = true)
     val id: Int = 0,
-    val vasarNev: String = "",
-    val termekNev: String = "",
-    val kategoria: String = "",
-    val mennyiseg: Int = 0,
+
+    val vasarId: Int,        // ID alapú kapcsolat
+
+    val termekNev: String,   // SNAPSHOT
+    val kategoria: String,   // SNAPSHOT
+    val mennyiseg: Int,
+    val eladasiAr: Int,
     val timestamp: Long = System.currentTimeMillis()
 )
+
+
